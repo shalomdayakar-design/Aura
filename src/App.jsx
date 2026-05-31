@@ -18,7 +18,15 @@ export default function App() {
 
   // Load products from DB
   useEffect(() => {
-    setProducts(db.getProducts());
+    let active = true;
+    db.syncWithServer().then(() => {
+      if (active) {
+        setProducts(db.getProducts());
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, [view]);
 
   // Load cart from LocalStorage on mount

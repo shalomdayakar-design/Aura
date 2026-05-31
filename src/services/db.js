@@ -164,6 +164,26 @@ function initializeStorage() {
 initializeStorage();
 
 export const db = {
+  // SERVER SYNCHRONIZATION
+  async syncWithServer() {
+    try {
+      const response = await fetch('/api/db');
+      if (!response.ok) throw new Error('Failed to fetch from server');
+      const data = await response.json();
+      
+      if (data) {
+        if (data.products) localStorage.setItem(PRODUCTS_KEY, JSON.stringify(data.products));
+        if (data.orders) localStorage.setItem(ORDERS_KEY, JSON.stringify(data.orders));
+        if (data.adminSettings) localStorage.setItem(SETTINGS_KEY, JSON.stringify(data.adminSettings));
+        if (data.adminUsers) localStorage.setItem(ADMIN_USERS_KEY, JSON.stringify(data.adminUsers));
+      }
+      return data;
+    } catch (error) {
+      console.error('Database server sync failed, using localStorage cache:', error);
+      return null;
+    }
+  },
+
   // SETTINGS & USER REGISTRY ACTIONS
   getAdminSettings() {
     return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || DEFAULT_ADMIN_SETTINGS;
@@ -173,6 +193,7 @@ export const db = {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
     
     // Also save/update in our users registry
+    let updatedUsers = [];
     if (settings.hasConfigured) {
       const users = this.getAdminUsers();
       const existingIdx = users.findIndex(u => u.username.toLowerCase() === settings.username.toLowerCase());
@@ -189,7 +210,15 @@ export const db = {
         users.push(userProfile);
       }
       localStorage.setItem(ADMIN_USERS_KEY, JSON.stringify(users));
+      updatedUsers = users;
     }
+
+    // Call server in background
+    fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'saveAdminSettings', payload: settings })
+    }).catch(err => console.error("Error syncing saveAdminSettings to server:", err));
 
     return settings;
   },
@@ -236,16 +265,24 @@ export const db = {
     const products = this.getProducts();
     const newProduct = {
       ...product,
-      id: 'prod-' + Date.now(),
+      id: product.id || 'prod-' + Date.now(),
       price: parseFloat(product.price) || 0,
       stock: parseInt(product.stock) || 0,
-      rating: 5.0,
-      reviews: [],
+      rating: product.rating || 5.0,
+      reviews: product.reviews || [],
       featured: product.featured || false,
       specifications: product.specifications || {}
     };
     products.push(newProduct);
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+
+    // Call server in background
+    fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addProduct', payload: newProduct })
+    }).catch(err => console.error("Error syncing addProduct to server:", err));
+
     return newProduct;
   },
 
@@ -260,6 +297,14 @@ export const db = {
         stock: parseInt(updatedFields.stock) || products[index].stock
       };
       localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+
+      // Call server in background
+      fetch('/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateProduct', payload: { id, updatedFields } })
+      }).catch(err => console.error("Error syncing updateProduct to server:", err));
+
       return products[index];
     }
     return null;
@@ -269,6 +314,14 @@ export const db = {
     const products = this.getProducts();
     const filtered = products.filter(p => p.id !== id);
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(filtered));
+
+    // Call server in background
+    fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'deleteProduct', payload: { id } })
+    }).catch(err => console.error("Error syncing deleteProduct to server:", err));
+
     return true;
   },
 
@@ -283,9 +336,9 @@ export const db = {
 
     const newOrder = {
       ...orderData,
-      id: 'ORD-' + Math.floor(10000 + Math.random() * 90000),
-      date: new Date().toISOString(),
-      status: 'Pending'
+      id: orderData.id || 'ORD-' + Math.floor(10000 + Math.random() * 90000),
+      date: orderData.date || new Date().toISOString(),
+      status: orderData.status || 'Pending'
     };
 
     orders.push(newOrder);
@@ -300,6 +353,13 @@ export const db = {
     });
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
 
+    // Call server in background
+    fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'addOrder', payload: newOrder })
+    }).catch(err => console.error("Error syncing addOrder to server:", err));
+
     return newOrder;
   },
 
@@ -309,10 +369,19 @@ export const db = {
     if (index !== -1) {
       orders[index].status = newStatus;
       localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+
+      // Call server in background
+      fetch('/api/db', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'updateOrderStatus', payload: { id, newStatus } })
+      }).catch(err => console.error("Error syncing updateOrderStatus to server:", err));
+
       return orders[index];
     }
     return null;
   },
+
 
   // STATS GENERATOR FOR ADMIN PANEL
   getStats() {

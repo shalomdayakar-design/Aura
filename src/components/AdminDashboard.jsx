@@ -59,7 +59,15 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    refreshData();
+    let active = true;
+    db.syncWithServer().then(() => {
+      if (active) {
+        refreshData();
+      }
+    });
+    return () => {
+      active = false;
+    };
   }, [isAuthenticated]);
 
   const [notifications, setNotifications] = useState([]);
@@ -127,16 +135,18 @@ export default function AdminDashboard() {
     let lastCount = db.getOrders().length;
 
     const interval = setInterval(() => {
-      const currentOrders = db.getOrders();
-      if (currentOrders.length > lastCount) {
-        const newOrders = currentOrders.slice(lastCount);
-        newOrders.forEach(order => triggerNotification(order));
-        lastCount = currentOrders.length;
-        refreshData();
-      } else if (currentOrders.length < lastCount) {
-        lastCount = currentOrders.length;
-      }
-    }, 3000);
+      db.syncWithServer().then(() => {
+        const currentOrders = db.getOrders();
+        if (currentOrders.length > lastCount) {
+          const newOrders = currentOrders.slice(lastCount);
+          newOrders.forEach(order => triggerNotification(order));
+          lastCount = currentOrders.length;
+          refreshData();
+        } else if (currentOrders.length < lastCount) {
+          lastCount = currentOrders.length;
+        }
+      });
+    }, 5000);
 
     const handleStorageChange = (e) => {
       if (e.key === 'aura_orders') {
