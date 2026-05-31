@@ -81,6 +81,7 @@ export default function Storefront({ products, onViewDetails, onAddToCart, searc
           display: 'flex',
           justifyContent: 'center',
           gap: '24px',
+          flexWrap: 'wrap',
           marginTop: '24px',
           borderTop: '1px dashed rgba(0,0,0,0.1)',
           paddingTop: '20px'

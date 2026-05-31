@@ -78,7 +78,7 @@ export default function Navbar({
 
   return (
     <>
-      <header className="metal-steel stitch-border" style={{
+      <header className="metal-steel stitch-border nav-header" style={{
         padding: '16px 24px',
         position: 'sticky',
         top: 0,
@@ -92,6 +92,7 @@ export default function Navbar({
         {/* Brand Logo */}
         <div 
           onClick={() => setView('store')}
+          className="nav-brand"
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
         >
           <img 
@@ -121,7 +122,7 @@ export default function Navbar({
 
         {/* Dynamic Search Box */}
         {currentView === 'store' && (
-          <div className="skeuo-inset-sm" style={{
+          <div className="skeuo-inset-sm search-container" style={{
             display: 'flex',
             alignItems: 'center',
             padding: '6px 12px',
@@ -159,7 +160,7 @@ export default function Navbar({
         )}
 
         {/* Access Panel Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className="nav-actions-container" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           
           {/* User Mobile Status Indicators */}
           {userPhone && currentView === 'store' && (

@@ -34,7 +34,7 @@ export default function ProductDetail({ product, onClose, onAddToCart }) {
     >
       {/* Detail Container Box */}
       <div 
-        className="skeuo-outset" 
+        className="skeuo-outset product-detail-container" 
         style={{
           width: '100%',
           maxWidth: '960px',
@@ -44,7 +44,7 @@ export default function ProductDetail({ product, onClose, onAddToCart }) {
           position: 'relative',
           padding: '32px',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '32px',
           animation: 'fadeInScale 0.3s ease-out'
         }}

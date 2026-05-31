@@ -515,12 +515,12 @@ export default function Checkout({ cartItems, onPlaceOrder, onCancel }) {
   return (
     <main className="container" style={{ padding: '32px 24px', flexGrow: 1 }}>
       <div 
-        className="skeuo-outset" 
+        className="skeuo-outset checkout-container" 
         style={{
           padding: '32px',
           backgroundColor: 'var(--bg-base)',
           display: 'grid',
-          gridTemplateColumns: step === 4 ? '1fr' : 'repeat(auto-fit, minmax(360px, 1fr))',
+          gridTemplateColumns: step === 4 ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
           gap: '32px',
           maxWidth: step === 4 ? '600px' : '100%',
           margin: '0 auto'
