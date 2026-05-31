@@ -1,0 +1,22 @@
+{
+  "short_name": "AURA",
+  "name": "AURA Premium Store",
+  "icons": [
+    {
+      "src": "/aura_logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "/aura_logo.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0b131a",
+  "theme_color": "#0b131a",
+  "display": "standalone",
+  "orientation": "portrait"
+}
