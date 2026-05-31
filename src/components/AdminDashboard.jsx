@@ -43,6 +43,8 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({});
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [isFirstSyncDone, setIsFirstSyncDone] = useState(false);
 
   const refreshData = () => {
     const s = db.getAdminSettings();
@@ -51,17 +53,24 @@ export default function AdminDashboard() {
     setOrders(db.getOrders());
     setStats(db.getStats());
 
-    // Auto-select correct tab on first load if no users exist
     const users = db.getAdminUsers();
-    if (users.length === 0) {
-      setGateTab('register');
-    }
+    setAdminUsers(users);
   };
 
   useEffect(() => {
     let active = true;
     db.syncWithServer().then(() => {
       if (active) {
+        const users = db.getAdminUsers();
+        setAdminUsers(users);
+        if (!isFirstSyncDone) {
+          if (users.length > 0) {
+            setGateTab('login');
+          } else {
+            setGateTab('register');
+          }
+          setIsFirstSyncDone(true);
+        }
         refreshData();
       }
     });
@@ -566,7 +575,7 @@ export default function AdminDashboard() {
               /* Login Tab Panel */
               <form id="admin-login-form" onSubmit={handleCredentialsLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px', textAlign: 'left' }}>
                 
-                {db.getAdminUsers().length === 0 && (
+                {adminUsers.length === 0 && (
                   <div style={{
                     padding: '12px', backgroundColor: 'rgba(241,196,15,0.15)', border: '1px solid var(--accent-gold)',
                     color: 'var(--accent-gold-dark)', borderRadius: '6px', fontSize: '12px', textAlign: 'center', fontWeight: 700, lineHeight: '1.4'
@@ -595,7 +604,7 @@ export default function AdminDashboard() {
                       value={usernameInput}
                       onChange={(e) => setUsernameInput(e.target.value)}
                       placeholder="Enter Username"
-                      disabled={db.getAdminUsers().length === 0}
+                      disabled={adminUsers.length === 0}
                       style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#fff', fontSize: '14px' }}
                     />
                   </div>
@@ -610,7 +619,7 @@ export default function AdminDashboard() {
                       type="password"
                       required
                       value={passwordInput}
-                      disabled={db.getAdminUsers().length === 0}
+                      disabled={adminUsers.length === 0}
                       onChange={(e) => setPasswordInput(e.target.value)}
                       placeholder="••••••••"
                       style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#fff', fontSize: '14px' }}
@@ -622,7 +631,7 @@ export default function AdminDashboard() {
                   id="admin-login-submit"
                   type="submit"
                   className="tactile-button tactile-button-gold"
-                  disabled={db.getAdminUsers().length === 0}
+                  disabled={adminUsers.length === 0}
                   style={{ padding: '12px', fontSize: '14px', width: '100%', marginTop: '10px' }}
                 >
                   Login

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -85,7 +85,8 @@ const apiPlugin = () => ({
             };
 
             // Dynamically import the handler and run it
-            const module = await import(filePath + `?t=${Date.now()}`);
+            const fileUrl = pathToFileURL(filePath).href;
+            const module = await import(fileUrl + `?t=${Date.now()}`);
             await module.default(mockReq, mockRes);
             return;
           } catch (error) {
